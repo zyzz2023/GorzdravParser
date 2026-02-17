@@ -6,7 +6,9 @@ using GorzdravParser.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace GorzdravParser.Application;
@@ -96,15 +98,26 @@ public class Parser : IParser
 
     private static int ExtractIdFromUrl(string productUrl)
     {
-        var trimmed = productUrl.TrimEnd('/');
+        var match = Regex.Match(productUrl, @"(\d+)(?:-(\d+))?\/?$");
 
-        var lastDashIndex = trimmed.LastIndexOf('-');
+        if (!match.Success)
+            return 0;
 
-        var idPart = trimmed[(lastDashIndex + 1)..];
+        var firstNumber = match.Groups[1].Value;
+        var hasSecondNumber = match.Groups[2].Success;
+        var secondNumber = hasSecondNumber ? match.Groups[2].Value : null;
 
-        int.TryParse(idPart, out var id);
-
-        return id;
+        if (hasSecondNumber)
+        {
+            return firstNumber.Length >= secondNumber.Length
+                ? ParseInt(firstNumber)
+                : ParseInt(secondNumber);
+        }
+        else
+        {
+            return ParseInt(firstNumber);
+        }
     }
 
+    private static int ParseInt(string number) => int.TryParse(number, out var result) ? result : 0;
 }

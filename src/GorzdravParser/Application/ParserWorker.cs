@@ -29,9 +29,9 @@ public class ParserWorker
         List<MedicationRow> rows = new List<MedicationRow>();
         int page = 1;
 
-        while(page <= 3)
+        while(page <= 1)
         {
-            var source = _loader.GetSourceByCurrentPage(page);
+            string source = _loader.GetSourceByCurrentPage(page);
             if (string.IsNullOrWhiteSpace(source))
                 return rows;
 
