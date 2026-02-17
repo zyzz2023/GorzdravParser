@@ -1,47 +1,104 @@
 ﻿using GorzdravParser.Core.Common;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+using OpenQA.Selenium;
+using OpenQA.Selenium.Chrome;
 
-namespace GorzdravParser.Application;
+using OpenQA.Selenium.Support.UI;
 
 public class HtmlLoader
 {
-    private readonly HttpClient _httpClient;
     private readonly string _url;
+    private readonly ChromeOptions _options;
+    private readonly IParserSettings _settings;
 
     public HtmlLoader(IParserSettings settings)
     {
-        _httpClient = new HttpClient();
-        _httpClient.DefaultRequestHeaders.Add("User-Agent",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
-    "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+        _settings = settings;
+        _url = $"{_settings.Url}/";
 
-        _httpClient.DefaultRequestHeaders.Add("Accept",
-            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
-
-        _httpClient.DefaultRequestHeaders.Add("Accept-Language", "ru-RU,ru;q=0.9");
-
-        _httpClient.DefaultRequestVersion = HttpVersion.Version11;
-        _httpClient.DefaultVersionPolicy = HttpVersionPolicy.RequestVersionOrLower;
-        _url = $"{settings.Url}/{settings.Prefix}";
+        _options = new ChromeOptions();
+        _options.AddArgument("--headless"); // без GUI
+        _options.AddArgument("--disable-gpu");
+        _options.AddArgument("--lang=ru");
+        _options.AddArgument("--no-sandbox");
     }
 
-    public async Task<string> GetSourceByCurrentPage(int currentPage)
+    public string GetSourceByCurrentPage(int currentPage)
     {
-        var currentUrl = _url.Replace("{CurrentPage}", currentPage.ToString());
-        var response = await _httpClient.GetAsync(currentUrl);
-        string source = string.Empty;
-
-        if (response != null && response.StatusCode == HttpStatusCode.OK)
+        try
         {
-            source = await response.Content.ReadAsStringAsync();
-        }
+            Console.WriteLine($"Получение данных со страницы {currentPage}...");
 
-        return source;
+            using var driver = new ChromeDriver(_options);
+
+            if(currentPage == 1)
+            {
+                driver.Navigate().GoToUrl(_url);
+
+                var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+                wait.Until(s => s.FindElements(By.CssSelector(".product-card")).Count >= _settings.CountProducts);
+            }
+            else
+            {
+                driver.Navigate().GoToUrl(_url);
+
+                var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+                wait.Until(s => s.FindElements(By.CssSelector(".ui-table-pagination__arrow-container")).Count > 0);
+
+                for(int i = 1; i <= currentPage; i++)
+                {
+                    CloseCookie(driver);
+
+                    try
+                    {
+                        var nextButton = wait.Until(x =>
+                        {
+                            var buttons = x.FindElements(By.CssSelector(".ui-table-pagination__arrow-container"));
+
+                            return buttons.FirstOrDefault(b =>
+                                !b.GetAttribute("class").Contains("disabled") &&
+                                b.Displayed &&
+                                b.Enabled);
+                        });
+
+                        nextButton.Click();
+
+                        wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
+                        wait.Until(s => s.FindElements(By.CssSelector(".product-card")).Count > 0);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Ошибка при переходе на страницу {i + 1}: {ex.Message}");
+                        throw;
+                    }
+                }
+            }
+
+            var source = driver.PageSource;
+
+            return source;
+        }
+        catch(WebDriverException ex)
+        {
+            Console.WriteLine($"Ошибка при загрузке страницы {currentPage}: {ex.Message}");
+            return string.Empty;
+        }
+    }
+
+    private static void CloseCookie(ChromeDriver driver)
+    {
+        try
+        {
+            var cookieWait = new WebDriverWait(driver, TimeSpan.FromSeconds(5));
+            cookieWait.Until(d => d.FindElement(By.CssSelector(".cookie-modal")).Displayed);
+
+            var closeButton = driver.FindElement(By.CssSelector(".cookie-modal button, .cookie-modal .close"));
+            ((IJavaScriptExecutor)driver).ExecuteScript("arguments[0].click();", closeButton);
+            Console.WriteLine("Cookie-окно закрыто");
+        }
+        catch (WebDriverTimeoutException)
+        {
+            Console.WriteLine("Cookie-окно не появилось");
+        }
     }
 }

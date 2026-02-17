@@ -11,12 +11,7 @@ class Program
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-            var settings = new ParserSettings
-            {
-                BaseUrl = "https://gorzdrav.org",
-                Url = "https://gorzdrav.org/category/sredstva-ot-diabeta",
-                Prefix = "page/{CurrentPage}"
-            };
+            var settings = new ParserSettings();
 
             IParser parser = new Parser();
             var worker = new ParserWorker(parser, settings);
@@ -29,9 +24,16 @@ class Program
 
             foreach (var item in medications)
             {
-                Console.WriteLine($"{item.Id} | {item.Name}");
+                Console.WriteLine($"ID: {item.Id}");
+                Console.WriteLine($"Название: {item.Name}");
+                Console.WriteLine($"Рецептурность: {item.Prescription}");
+                Console.WriteLine($"Действующее вещество: {item.ActiveIngredient}");
                 Console.WriteLine($"Цена: {item.Price}");
+                Console.WriteLine($"Цена старая: {item.OldPrice}");
                 Console.WriteLine($"Производитель: {item.Manufacturer}");
+                Console.WriteLine($"Ссылка на картинку: {item.PictureUrl}");
+                Console.WriteLine($"Ссылка на товар: {item.ProductUrl}");
+                Console.WriteLine($"Регион: {item.Region}");
                 Console.WriteLine(new string('-', 60));
             }
 

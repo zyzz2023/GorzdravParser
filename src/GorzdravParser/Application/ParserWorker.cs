@@ -28,17 +28,18 @@ public class ParserWorker
     {
         List<MedicationRow> rows = new List<MedicationRow>();
         int page = 1;
-        var source = await _loader.GetSourceByCurrentPage(page);
 
-        while(source != null)
+        while(page <= 3)
         {
-            var result = await _parser.Parse(source, _settings.BaseUrl);
-            if (result != null)
+            var source = _loader.GetSourceByCurrentPage(page);
+            if (string.IsNullOrWhiteSpace(source))
+                return rows;
+
+            var result = _parser.Parse(source, _settings.BaseUrl);
+            if (result != null && result.Count() > 0)
                 rows.AddRange(result);
                 
             page++;
-            source = await _loader.GetSourceByCurrentPage(page);
-            Task.Delay(1000).Wait();
         }
 
         return rows;

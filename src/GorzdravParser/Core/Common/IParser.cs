@@ -10,5 +10,5 @@ namespace GorzdravParser.Core.Common;
 
 public interface IParser
 {
-    Task<IEnumerable<MedicationRow>> Parse(string html, string baseUrl);
+    IEnumerable<MedicationRow> Parse(string html, string baseUrl);
 }

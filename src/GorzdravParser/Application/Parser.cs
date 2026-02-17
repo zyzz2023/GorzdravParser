@@ -13,7 +13,7 @@ namespace GorzdravParser.Application;
 
 public class Parser : IParser
 {
-    public async Task<IEnumerable<MedicationRow>> Parse(string html, string baseUrl)
+    public IEnumerable<MedicationRow> Parse(string html, string baseUrl)
     {
         var context = BrowsingContext.New(Configuration.Default);
         var document = context.OpenAsync(req => req.Content(html)).Result;
@@ -42,11 +42,11 @@ public class Parser : IParser
 
             var prescription = card.QuerySelector(".custom-chip__text")?.TextContent;
 
-            var manufacturer = ExtractField(card, "Производитель:");
+            var manufacturer = ExtractField(card, "Производитель");
 
-            var activeIngredient = ExtractField(card, "Действующее вещество:");
+            var activeIngredient = ExtractField(card, "Действующее вещество");
 
-            var region = ExtractField(card, "Страна:");
+            var region = ExtractField(card, "Страна");
 
             var price = card.QuerySelector(".ui-price__price")?.TextContent;
 
