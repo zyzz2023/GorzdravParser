@@ -1,7 +1,7 @@
 ﻿using AngleSharp;
 using AngleSharp.Dom;
 using AngleSharp.Html.Dom;
-using GorzdravParser.Core.Common;
+using GorzdravParser.Application.Intefaces;
 using GorzdravParser.Core.Models;
 using System;
 using System.Collections.Generic;

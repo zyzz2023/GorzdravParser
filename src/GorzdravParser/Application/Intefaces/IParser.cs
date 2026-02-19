@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GorzdravParser.Core.Common;
+namespace GorzdravParser.Application.Intefaces;
 
 public interface IParser
 {

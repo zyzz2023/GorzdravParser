@@ -1,5 +1,8 @@
 ﻿using GorzdravParser.Application;
+using GorzdravParser.Application.Intefaces;
 using GorzdravParser.Core.Common;
+using GorzdravParser.Core.Common.Interfaces;
+using GorzdravParser.Infrastructure.Services;
 
 namespace GorzdravParser;
 
@@ -11,16 +14,19 @@ class Program
         {
             Console.OutputEncoding = System.Text.Encoding.UTF8;
 
-            var settings = new ParserSettings();
-
+            IParserSettings settings = new ParserSettings();
             IParser parser = new Parser();
-            var worker = new ParserWorker(parser, settings);
+            IParserWorker worker = new ParserWorker(parser, settings);
+            ISaveToCsvService csvService = new SaveToCsvService();
+            const string FileName = "Results.csv";
 
             Console.WriteLine("Начинаем парсинг...\n");
 
             var medications = await worker.Worker();
 
             Console.WriteLine($"Найдено товаров: {medications.Count}\n");
+
+            csvService.SaveToCsv(FileName, medications);
 
             foreach (var item in medications)
             {
@@ -45,7 +51,6 @@ class Program
         {
             Console.WriteLine("Ошибка выполнения:");
             Console.WriteLine(ex.Message);
-            Console.WriteLine(ex.InnerException);
             return 1;
         }
     }

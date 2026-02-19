@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="1.4.0" />
+    <PackageReference Include="NPOI" Version="2.7.5" />
     <PackageReference Include="Selenium.WebDriver" Version="4.40.0" />
   </ItemGroup>
 

@@ -1,4 +1,6 @@
-﻿namespace GorzdravParser.Core.Common;
+﻿using GorzdravParser.Core.Common.Interfaces;
+
+namespace GorzdravParser.Core.Common;
 
 public class ParserSettings : IParserSettings
 {

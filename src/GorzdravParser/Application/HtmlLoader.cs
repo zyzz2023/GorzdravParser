@@ -1,4 +1,4 @@
-﻿using GorzdravParser.Core.Common;
+﻿using GorzdravParser.Core.Common.Interfaces;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 

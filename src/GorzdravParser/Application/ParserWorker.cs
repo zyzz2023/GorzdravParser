@@ -1,15 +1,10 @@
-﻿using AngleSharp.Dom;
-using GorzdravParser.Core.Common;
+﻿using GorzdravParser.Application.Intefaces;
+using GorzdravParser.Core.Common.Interfaces;
 using GorzdravParser.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GorzdravParser.Application;
 
-public class ParserWorker
+public class ParserWorker : IParserWorker
 {
     private readonly HtmlLoader _loader;
     private readonly IParser _parser;
@@ -28,8 +23,9 @@ public class ParserWorker
     {
         List<MedicationRow> rows = new List<MedicationRow>();
         int page = 1;
+        bool isRunning = true;
 
-        while(page <= 1)
+        while(isRunning)
         {
             string source = _loader.GetSourceByCurrentPage(page);
             if (string.IsNullOrWhiteSpace(source))
@@ -37,8 +33,14 @@ public class ParserWorker
 
             var result = _parser.Parse(source, _settings.BaseUrl);
             if (result != null && result.Count() > 0)
+            {
                 rows.AddRange(result);
-                
+            }
+            else
+            {
+                isRunning = false;
+            }
+             
             page++;
         }
 
